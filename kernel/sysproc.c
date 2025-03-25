@@ -69,13 +69,37 @@ sys_sleep(void)
   return 0;
 }
 
-
 #ifdef LAB_PGTBL
 int
 sys_pgaccess(void)
 {
-  // lab pgtbl: your code here.
-  return 0;
+  uint64 addr;         // Địa chỉ bắt đầu
+    int num_pages;      // Số lượng trang cần kiểm tra
+    uint64 mask_addr;   // Địa chỉ bộ đệm để lưu kết quả
+    struct proc *p = myproc();
+    uint64 mask = 0;    // Biến lưu kết quả
+
+    // Nhận tham số từ người dùng
+    argaddr(0, &addr);argint(1, &num_pages);argaddr(2, &mask_addr);
+
+
+
+    for (int i = 0; i < num_pages; i++) {
+        pte_t *pte = walk(p->pagetable, addr + (i * PGSIZE), 0);
+        if (pte && (*pte & PTE_V)) {  // Kiểm tra xem PTE có hợp lệ không
+            if (*pte & PTE_A) {  // Kiểm tra bit PTE_A
+                mask |= (1 << i);  // Bật bit tương ứng trong mask
+            }
+            *pte &= ~PTE_A;  // Xóa bit PTE_A sau khi kiểm tra
+        }
+    }
+
+    // Ghi kết quả vào bộ đệm
+    if (copyout(p->pagetable, mask_addr, (char *)&mask, sizeof(mask)) < 0) {
+        return -1;  // Trả về lỗi nếu không sao chép được
+    }
+
+    return 0;  // Thành công
 }
 #endif
 

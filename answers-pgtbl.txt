@@ -1,0 +1,13 @@
+Trong xv6, việc sử dụng trang chia sẻ có thể tăng tốc các cuộc gọi hệ thống như fork(), exec(), wait(), read(), và write() bằng cách cho phép nhiều tiến trình chia sẻ cùng một vùng nhớ. Điều này giúp giảm chi phí sao chép và phân bổ bộ nhớ, tăng hiệu suất.
+
+Lợi ích chính:
+    Giảm sao chép bộ nhớ: Tiến trình cha và con có thể chia sẻ dữ liệu mà không cần sao chép.
+    Tăng tốc thực thi: Thông tin cần thiết có thể được giữ lại, tránh khởi tạo lại.
+    Cải thiện hiệu suất I/O: Nhiều tiến trình có thể truy cập cùng một bộ đệm, giảm độ trễ.
+
+/* kernel/memlayout.h */
+...
+cấu trúc usyscall {
+int pid; // ID tiến trình
+struct proc *parent // Tiến trình cha
+};
